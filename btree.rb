@@ -1,9 +1,20 @@
 class NullNode
     def initialize(fsize, hfsize, compar)
+	@fsize = fsize
+	@hfsize = hfsize
+	@compar = compar
     end
 
     def add(value)
-	Node.new(fsize, hfsize, compar, [self, value, self])
+	Node.new(@fsize, @hfsize, @compar, [self, value, self])
+    end
+
+    def dump(stack)
+	# do nothing
+    end
+
+    def to_s
+	"null"
     end
 end
 
@@ -33,7 +44,7 @@ class Node < Array
 
     def add(value)
 	idx = self.index(value)
-	if idx % 2 != 0
+	if idx % 2 == 1
 	    self[idx] = value
 	    return self
 	end
@@ -41,9 +52,34 @@ class Node < Array
 	if self.size > @fsize
 	    mid = self.size / 2
 	    mid -= 1 if mid % 2 == 0
-	    newright = Node.new(fsize, hfsize, compar, self.slice!(mid+1, self.size-mid-1))
-	    Node.new(fsize, hfsize, compar, [self, self.slice!(mid), newright])
+	    newright = Node.new(@fsize, @hfsize, @compar, self.slice!(mid+1, self.size-mid-1))
+	    Node.new(@fsize, @hfsize, @compar, [self, self.slice!(mid), newright])
+	else
+	    self
 	end
+    end
+
+    def indent(stack)
+	stack.each_with_index{|item, idx|
+	    print idx == stack.size - 1 ? " \\_ "
+		: item ? " |  "
+		: "    "
+	}
+    end
+
+    def dump(stack=[])
+	indent(stack)
+	self.each_with_index{|item, idx|
+	    if idx % 2 == 1
+		print item.to_s + " "
+	    end
+	}
+	print "\n"
+	self.each_with_index{|item, idx|
+	    if idx % 2 == 0
+		item.dump(stack + [idx < self.size - 1 ? true : false])
+	    end
+	}
     end
 end
 
@@ -59,8 +95,16 @@ class BTree
 	hfsize = hsize + hvsize
 	@head = NullNode.new(fsize, hfsize, compar)
     end
-    
+
     def add(value)
 	@head = @head.add(value)
     end
+
+    def dump
+	@head.dump
+    end
+end
+
+def bhash(size = 3, compar = ->(a,b){a <=> b})
+    BTree.new(size, ->(a,b){ compar.call(a[0], b[0]) })
 end
