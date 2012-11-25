@@ -6,7 +6,7 @@ class NullNode
     end
 
     def add(value)
-	Node.new(@fsize, @hfsize, @compar, [self, value, self])
+	[ true, Node.new(@fsize, @hfsize, @compar, [self, value, self]) ]
     end
 
     def dump(stack)
@@ -46,16 +46,22 @@ class Node < Array
 	idx = self.index(value)
 	if idx % 2 == 1
 	    self[idx] = value
-	    return self
+	    return [ false, self ]
 	end
-	self.insert idx, *self.delete_at(idx).add(value)
+	(did_split, sub_result) = self[idx].add(value)
+	if did_split
+	    self.delete_at(idx)
+	    self.insert idx, *sub_result
+	else
+	    self[idx] = sub_result
+	end
 	if self.size > @fsize
 	    mid = self.size / 2
 	    mid -= 1 if mid % 2 == 0
 	    newright = Node.new(@fsize, @hfsize, @compar, self.slice!(mid+1, self.size-mid-1))
-	    Node.new(@fsize, @hfsize, @compar, [self, self.slice!(mid), newright])
+	    [ true, Node.new(@fsize, @hfsize, @compar, [self, self.slice!(mid), newright]) ]
 	else
-	    self
+	    [ false, self ]
 	end
     end
 
@@ -97,7 +103,7 @@ class BTree
     end
 
     def add(value)
-	@head = @head.add(value)
+	(did_split, @head) = @head.add(value)
     end
 
     def dump
