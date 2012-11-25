@@ -21,7 +21,7 @@ class NullNode
 	"null"
     end
 
-    def check
+    def check(is_head = true)
 	# depth is 0
 	0
     end
@@ -162,17 +162,18 @@ class Node < Array
 	}
     end
 
-    def check
+    def check(is_head = true)
 	if self.size % 2 == 0
 	    raise "Node size is even"
 	end
-	if self.size < @hfsize
+	# head node is allowed to be too small
+	if self.size < @hfsize && !is_head
 	    raise "Node is too small"
 	end
 	if self.size > @fsize
 	    raise "Node is too large"
 	end
-	depth = self[0].check
+	depth = self[0].check(false)
 	self.each_with_index {|item, idx|
 	    if idx % 2 == 0 and (!item.is_a?(Node) && !item.is_a?(NullNode))
 		raise "Even child is not a Node"
@@ -183,7 +184,7 @@ class Node < Array
 	    if idx % 2 == 0
 		# Node or NullNode
 		if idx != 0
-		    if depth != item.check
+		    if depth != item.check(false)
 			raise "Tree is not balanced"
 		    end
 		end
