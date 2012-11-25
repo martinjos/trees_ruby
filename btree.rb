@@ -20,6 +20,15 @@ class NullNode
     def to_s
 	"null"
     end
+
+    def check
+	# depth is 0
+	0
+    end
+
+    def tree_count
+	0
+    end
 end
 
 class Node < Array
@@ -152,6 +161,48 @@ class Node < Array
 	    end
 	}
     end
+
+    def check
+	if self.size % 2 == 0
+	    raise "Node size is even"
+	end
+	if self.size < @hfsize
+	    raise "Node is too small"
+	end
+	if self.size > @fsize
+	    raise "Node is too large"
+	end
+	depth = self[0].check
+	self.each_with_index {|item, idx|
+	    if idx % 2 == 0 and (!item.is_a?(Node) && !item.is_a?(NullNode))
+		raise "Even child is not a Node"
+	    end
+	    if idx % 2 == 1 and (item.is_a?(Node) || item.is_a?(NullNode))
+		raise "Odd child is a Node"
+	    end
+	    if idx % 2 == 0
+		# Node or NullNode
+		if idx != 0
+		    if depth != item.check
+			raise "Tree is not balanced"
+		    end
+		end
+	    end
+	}
+	depth + 1
+    end
+
+    def tree_count
+	s = 0
+	self.each_with_index{|item, idx|
+	    if idx % 2 == 0
+		s += item.tree_count
+	    else
+		s += 1
+	    end
+	}
+	s
+    end
 end
 
 class BTree
@@ -182,20 +233,69 @@ class BTree
     def dump
 	@head.dump
     end
+
+    def check
+	@head.check
+    end
+
+    def size
+	@head.tree_count
+    end
 end
 
 def bmap(size = 3, compar = ->(a,b){a <=> b})
     BTree.new(size, ->(a,b){ compar.call(a[0], b[0]) })
 end
 
-# add #{num} random integers in [ 0, #{top} ) to a ( #{size-1}, #{size} )
+# add #{num} random integers in [ 0, #{top} ) to a ( #{order-1}, #{order} )
 # B-tree and dump in "ps f" format
 #
-def testadd(size, num, top)
-    t = BTree.new(size)
+def testadd(order, num, top, do_dump=true)
+    if order.is_a? BTree
+	t = order
+    else
+	t = BTree.new(order)
+    end
+
     (0...num).each{
+	#puts "Adding a random integer..."
 	t.add rand(0...top)
     }
-    t.dump
+    if do_dump
+	t.dump
+    end
+    t
+end
+
+def testremove(t, num, top, do_dump=true)
+    (0...num).each{
+	#puts "Removing a random integer..."
+	t.remove rand(0...top)
+    }
+    if do_dump
+	t.dump
+    end
+    t
+end
+
+def testall(order, numtop, reps=100)
+    top = 10000
+    t = BTree.new(order)
+    begin
+	(0...reps).each {
+	    r = rand(0...numtop)
+	    puts "Adding #{r}"
+	    testadd(t, r, top, false)
+	    puts "t.size=#{t.size}, t.check=#{t.check}"
+
+	    r = rand(0...numtop*4) # remove more, because some will miss
+	    puts "Removing #{r}"
+	    testremove(t, r, top, false)
+	    puts "t.size=#{t.size}, t.check=#{t.check}"
+	}
+    ensure
+	#puts "Ensuring we get a tree dump..."
+	#t.dump
+    end
     t
 end
