@@ -9,9 +9,16 @@
 # single empty node.)
 #
 
+require 'printtree'
+
 class String
     def depth
 	0
+    end
+
+    def pt(stack)
+	PrintTree.indent(stack)
+	puts self.inspect
     end
 end
 
@@ -43,6 +50,13 @@ class Concat
 
     def to_s
 	"(#{@left.inspect} + #{@right.inspect})"
+    end
+
+    def pt(stack=[])
+	PrintTree.indent(stack)
+	puts "#{left.size} #{right.size}"
+	left.pt(stack + [true])
+	right.pt(stack + [false])
     end
 end
 

@@ -1,3 +1,5 @@
+require 'printtree'
+
 class NullNode
     def initialize(fsize, hfsize, compar)
 	@fsize = fsize
@@ -139,16 +141,8 @@ class Node < Array
 	[a, b, c]
     end
 
-    def indent(stack)
-	stack.each_with_index{|item, idx|
-	    print idx == stack.size - 1 ? " \\_ "
-		: item ? " |  "
-		: "    "
-	}
-    end
-
     def dump(stack=[])
-	indent(stack)
+	PrintTree.indent(stack)
 	self.each_with_index{|item, idx|
 	    if idx % 2 == 1
 		print item.to_s + " "
