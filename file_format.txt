@@ -1,0 +1,44 @@
+IDEAS
+
+* I don't think there's any problem with having different numbers of values in the different types of tree
+  block (node/leaf).
+* Can't quite make up my mind whether it's better to put all the values in the leaf nodes
+* Then can't make up my mind whether it's a good idea to have pointers for in-order traversal
+* Don't know whether my variable size field size thing is a good idea - if I do this, maybe should
+  put all the chosen sizes in the header just for good measure
+* Thinking it might be a good idea to use some sort of rope structure for values (perhaps optionally).
+  Keys shouldn't come into it, as they are likely to be shorter than the block size anyway in most cases.
+  Of course, there is also the question of whether I want true reference-counted ropes whose data can
+  be shared between items, or just something a bit rope-like that allows log-time insertions.
+  (Or both.)
+
+FILE FORMAT
+
+magic		4		the magic number for the tree file format
+version		4		the version number of the tree file format
+hdr_size	4		the size of the tree file format header (bytes)
+ext_hdr_size	4		the size of the extended header (bytes)
+block_size	4		the block size (bytes)
+block_align	4		the block alignment (bytes) - usually block_size or 1
+ptr_size	4		the size of a block ptr (bytes). only value supported will be 4 (at first)
+tree_head	ptr_size	pointer to the current tree head. 0 = NULL
+free_head	ptr_size	pointer to the current head of the free block list. 0 = NULL
+
+<ext-hdr>	ext_hdr_size	used for application-specific magic numbers, version numbers, anything else
+				you might prefer to be in a (semi-)fixed location
+
+<block>		block_size
+	type	1		4 types - node, leaf, data_node, data
+	size	min necessary	in cases where changing the size of this field changes the size necessary,
+				the smaller size is chosen (and the extra space sacrificed at the end of the
+				block, instead of here). This is purely to resolve the ambiguity.
+	    node		size indicates number of data elements (excluding child nodes)
+	    leaf		ditto (except that there are no child nodes anyway)
+	    data_node		size indicates number of child elements
+	    data		size indicates number of bytes used for this object
+				(could remove for all but last?)
+<empty-block>	block_size
+	next	ptr_size
+<block>
+<block>
+...
