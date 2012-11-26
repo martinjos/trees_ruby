@@ -120,3 +120,45 @@ def concat(left, right, copy_limit = $default_concat_copy_limit)
 	node
     end
 end
+
+# empty nodes are just nil for now
+def substr(rope, start, finish)
+    if !rope.is_a? Concat
+	return rope[[0, start].max...finish]
+    end
+
+    # empty node
+    return nil if finish <= start
+
+    nodes = []
+    lsize = rope.left.size
+    rsize = rope.right.size
+    fullsize = lsize + rsize
+
+    if start <= 0 && finish >= lsize
+	nodes << rope.left
+    elsif (start >= 0 && start < lsize) ||
+	  (finish > 0 && finish <= lsize)
+	nodes << substr(rope.left, start, finish)
+    end
+
+    if start <= lsize && finish >= fullsize
+	nodes << rope.right
+    elsif (start >= lsize && start < fullsize) ||
+	  (finish > lsize && finish <= fullsize)
+	nodes << substr(rope.right, start-lsize, finish-lsize)
+    end
+
+    if nodes.size == 1
+	nodes[0]
+    elsif nodes.size == 2
+	if nodes[0].equal?(rope.left) && nodes[1].equal?(rope.right)
+	    rope
+	else
+	    Concat.new(nodes[0], nodes[1])
+	end
+    else
+	# empty node
+	nil
+    end
+end
