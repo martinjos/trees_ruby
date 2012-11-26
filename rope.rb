@@ -89,16 +89,16 @@ def rebalance(rope, copy_limit)
     walker = Walker.new(rope)
     list = []
     walker.each{|leaf|
-	while !list.empty? && list[-1].size < leaf.size
-	    leftnode = list.slice!(-1)
-	    while !list.empty? && list[-1].size < leaf.size
-		leftnode = concat(list.slice!(-1), leftnode, copy_limit, false)
+	while !list.empty? && list[0].size <= leaf.size
+	    leftnode = list.slice!(0)
+	    while !list.empty? && list[0].size < leaf.size
+		leftnode = concat(list.slice!(0), leftnode, copy_limit, false)
 	    end
 	    leaf = concat(leftnode, leaf, copy_limit, false)
 	end
-	list << leaf
+	list.unshift leaf
     }
-    list.inject {|a, b| concat(a, b, copy_limit, false) }
+    list.inject {|b, a| concat(a, b, copy_limit, false) }
 end
 
 $default_concat_copy_limit = 30
