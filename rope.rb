@@ -85,25 +85,25 @@ end
 
 # this is a lot like shift-reduce...
 # not accounting for empty nodes at the moment...
-def rebalance(rope)
+def rebalance(rope, copy_limit)
     walker = Walker.new(rope)
     list = []
     walker.each{|leaf|
-	while !list.empty? && list[0].size < leaf.size
-	    leftnode = list.slice!(0)
-	    while !list.empty? && list[0].size < leaf.size
-		leftnode = Concat.new(list.slice!(0), leftnode)
+	while !list.empty? && list[-1].size < leaf.size
+	    leftnode = list.slice!(-1)
+	    while !list.empty? && list[-1].size < leaf.size
+		leftnode = concat(list.slice!(-1), leftnode, copy_limit, false)
 	    end
-	    leaf = Concat.new(leftnode, leaf)
+	    leaf = concat(leftnode, leaf, copy_limit, false)
 	end
-	list.unshift leaf
+	list << leaf
     }
-    list.inject {|a, b| Concat.new(b, a) }
+    list.inject {|a, b| concat(a, b, copy_limit, false) }
 end
 
 $default_concat_copy_limit = 30
 
-def concat(left, right, copy_limit = $default_concat_copy_limit)
+def concat(left, right, copy_limit = $default_concat_copy_limit, rebalance=true)
     node = Concat.new(left, right)
     if !left.is_a?(Concat) && !right.is_a?(Concat) && left.size + right.size <= copy_limit
 	left + right
@@ -113,9 +113,9 @@ def concat(left, right, copy_limit = $default_concat_copy_limit)
     elsif !right.is_a?(Concat) && left.is_a?(Concat) &&
           !left.right.is_a?(Concat) && right.size + left.right.size <= copy_limit
 	Concat.new(left.left, left.right + right)
-    elsif node.size < fib(node.depth + 2)
+    elsif node.size < fib(node.depth + 2) and rebalance
 	puts "Rebalancing"
-	rebalance(node)
+	rebalance(node, copy_limit)
     else
 	node
     end
