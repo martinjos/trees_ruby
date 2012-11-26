@@ -2,6 +2,12 @@
 # Hans J. Boehm, Russ Atkinson, Michael Plass: "Ropes: An Alternative to
 # Strings", Software--Practice and Experience, Vol 25(12), 1315-1330, Dec 1995
 #
+# My modifications:
+# * Efficient concatenation at both ends (not just on the right).
+# * Substring that just returns an existing whole node if it can, or part of a
+# single node, and never inserts empty nodes. (If necessary, it returns a
+# single empty node.)
+#
 
 class String
     def depth
@@ -121,7 +127,8 @@ def concat(left, right, copy_limit = $default_concat_copy_limit, rebalance=true)
     end
 end
 
-# empty nodes are just nil for now
+# empty nodes are just nil for now.
+# also, no lazy evaluation yet.
 def substr(rope, start, finish)
     if !rope.is_a? Concat
 	return rope[[0, start].max...finish]
