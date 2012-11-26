@@ -132,7 +132,7 @@ def concat(left, right, copy_limit = $default_concat_copy_limit, rebalance=true)
           !left.right.is_a?(Concat) && right.size + left.right.size <= copy_limit
 	Concat.new(left.left, left.right + right)
     elsif node.size < fib(node.depth + 2) and rebalance
-	puts "Rebalancing"
+	#puts "Rebalancing"
 	rebalance(node, copy_limit)
     else
 	node
