@@ -122,6 +122,11 @@ end
 $default_concat_copy_limit = 30
 
 def concat(left, right, copy_limit = $default_concat_copy_limit, rebalance=true)
+    if left.nil?
+	return right
+    elsif right.nil?
+	return left
+    end
     node = Concat.new(left, right)
     if !left.is_a?(Concat) && !right.is_a?(Concat) && left.size + right.size <= copy_limit
 	left + right
