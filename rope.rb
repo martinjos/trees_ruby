@@ -29,18 +29,16 @@ end
 class Concat
     attr :left
     attr :right
+    attr :size
 
     def initialize(left, right)
 	@left = left
 	@right = right
+	@size = left.size + right.size
     end
 
     def depth
 	[@left.depth, @right.depth].max + 1
-    end
-
-    def size
-	@left.size + @right.size
     end
 
     def to_s
@@ -139,8 +137,7 @@ def substr(rope, start, finish)
 
     nodes = []
     lsize = rope.left.size
-    rsize = rope.right.size
-    fullsize = lsize + rsize
+    fullsize = rope.size
 
     if start <= 0 && finish >= lsize
 	nodes << rope.left
