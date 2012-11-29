@@ -19,6 +19,10 @@ class NilClass
     def <<(x)
 	Node.new(x)
     end
+    def pt(stack=[])
+	PrintTree.indent(stack)
+	puts "" # always black - no need to print colour
+    end
 end
 
 class Node
@@ -58,6 +62,7 @@ class Node
 	    @right
 	end
     end
+    # rotate side to the top
     def rot(side)
 	# [-1, 1].include?(side)
 	if side < 0
@@ -106,6 +111,12 @@ class Node
 	end
 	head
     end
+    def pt(stack=[])
+	PrintTree.indent(stack)
+	puts (@red ? "red" : "black") + " #{@x}"
+	@left.pt(stack + [true])
+	@right.pt(stack + [false])
+    end
 end
 
 class RBTree
@@ -116,5 +127,8 @@ class RBTree
 	@head = @head << x
 	@head.black!
 	self
+    end
+    def pt
+	@head.pt
     end
 end
