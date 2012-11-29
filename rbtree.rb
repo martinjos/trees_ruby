@@ -19,6 +19,12 @@ class NilClass
     def <<(x)
 	Node.new(x)
     end
+    def size
+	0
+    end
+    def check
+	0
+    end
     def pt(stack=[])
 	PrintTree.indent(stack)
 	puts "" # always black - no need to print colour
@@ -83,7 +89,10 @@ class Node
 	head.left = self
 	head
     end
-    def <<(x)
+    def add(x)
+	self << x
+    end
+    def << x
 	side = x <=> @x
 	if side == 0
 	    @x = x
@@ -111,6 +120,24 @@ class Node
 	end
 	head
     end
+    def size
+	@left.size + @right.size + 1
+    end
+    def check
+	lc = @left.check
+	rc = @right.check
+	if lc != rc
+	    raise "Tree is not balanced"
+	end
+	if black?
+	    lc + 1
+	else
+	    if @left.red? || @right.red?
+		raise "Red node has red child"
+	    end
+	    lc
+	end
+    end
     def pt(stack=[])
 	PrintTree.indent(stack)
 	puts (@red ? "red" : "black") + " #{@x}"
@@ -128,7 +155,27 @@ class RBTree
 	@head.black!
 	self
     end
+    def size
+	@head.size
+    end
+    def check
+	if @head.red?
+	    raise "Head node is red"
+	end
+	@head.check
+    end
     def pt
 	@head.pt
     end
+end
+
+def testadd(num, top, do_dump=true, t=RBTree.new)
+    (0...num).each {
+	t << rand(0...top)
+	t.check
+    }
+    if do_dump
+	t.pt
+    end
+    t
 end
