@@ -143,9 +143,8 @@ class Node
 		    delete_balance(head, -1, child_depth_change)
 	    elsif @right.is_a?(Node)
 		# assert(self.black? && @right.red?)
-		head = self.anti
+		head = @right
 		head.black!
-		head.left = nil
 	    else
 		head = nil
 		if black?
@@ -169,10 +168,9 @@ class Node
 	    (head, depth_change) = delete_balance(head, 1, right_depth_change)
 	elsif @left.is_a?(Node)
 	    # assert(self.black? && @left.red?)
-	    head = self.clock
+	    value = @value
+	    head = @left
 	    head.black!
-	    value = head.right.value
-	    head.right = nil
 	else
 	    value = @value
 	    head = nil
@@ -228,7 +226,7 @@ class RBTree
     alias << add
 
     def delete(x)
-	@head = @head.delete(x)
+	(@head, depth_change) = @head.delete(x)
 	self
     end
 
