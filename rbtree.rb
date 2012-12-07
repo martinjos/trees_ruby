@@ -34,24 +34,31 @@ end
 class Node
     attr :left, true
     attr :right, true
+    attr :value
+
     def initialize(x)
-	@x = x
+	@value = x
 	@red = true
 	@left = nil
 	@right = nil
     end
+
     def red?
 	@red
     end
+
     def black?
 	!@red
     end
+
     def red!
 	@red = true
     end
+
     def black!
 	@red = false
     end
+
     def []=(side, val)
 	# [-1, 1].include?(side)
 	if side < 0
@@ -60,6 +67,7 @@ class Node
 	    @right = val
 	end
     end
+
     def [](side)
 	# [-1, 1].include?(side)
 	if side < 0
@@ -68,6 +76,7 @@ class Node
 	    @right
 	end
     end
+
     # rotate side to the top
     def rot(side)
 	# [-1, 1].include?(side)
@@ -77,25 +86,25 @@ class Node
 	    anti
 	end
     end
+
     def clock
 	head = @left
 	@left = head.right
 	head.right = self
 	head
     end
+
     def anti
 	head = @right
 	@right = head.left
 	head.left = self
 	head
     end
+
     def add(x)
-	self << x
-    end
-    def << x
-	side = x <=> @x
+	side = x <=> @value
 	if side == 0
-	    @x = x
+	    @value = x
 	    return self
 	end
 	self[side] = self[side] << x
@@ -120,9 +129,67 @@ class Node
 	end
 	head
     end
+
+    alias << add
+
+    def delete(x)
+	side = x <=> @value
+	head = self
+	depth_change = false
+	if side == 0
+	    if @left.is_a?(Node)
+		(@value, head, child_depth_change) = @left.delete_last
+		(head, depth_change) =
+		    delete_balance(head, -1, child_depth_change)
+	    elsif @right.is_a?(Node)
+		# assert(self.black? && @right.red?)
+		head = self.anti
+		head.black!
+		head.left = nil
+	    else
+		head = nil
+		if black?
+		    depth_change = true
+		end
+	    end
+	elsif self[side].is_a?(Node)
+	    (self[side], child_depth_change) = self[side].delete(x)
+	    (head, depth_change) =
+		delete_balance(head, side, child_depth_change)
+	end
+	[head, depth_change]
+    end
+
+    def delete_last
+	value = nil
+	head = self
+	depth_change = false
+	if @right.is_a?(Node)
+	    (value, @right, right_depth_change) = @right.delete_last
+	    (head, depth_change) = delete_balance(head, 1, right_depth_change)
+	elsif @left.is_a?(Node)
+	    # assert(self.black? && @left.red?)
+	    head = self.clock
+	    head.black!
+	    value = head.right.value
+	    head.right = nil
+	else
+	    value = @value
+	    head = nil
+	    if black?
+		depth_change = true
+	    end
+	end
+	[value, head, depth_change]
+    end
+
+    def delete_balance(head, side, child_depth_change)
+    end
+
     def size
 	@left.size + @right.size + 1
     end
+
     def check
 	lc = @left.check
 	rc = @right.check
@@ -138,9 +205,10 @@ class Node
 	    lc
 	end
     end
+    
     def pt(stack=[])
 	PrintTree.indent(stack)
-	puts (@red ? "red" : "black") + " #{@x}"
+	puts (@red ? "red" : "black") + " #{@value}"
 	@left.pt(stack + [true])
 	@right.pt(stack + [false])
     end
@@ -150,20 +218,31 @@ class RBTree
     def initialize
 	@head = nil
     end
-    def <<(x)
+
+    def add(x)
 	@head = @head << x
 	@head.black!
 	self
     end
+
+    alias << add
+
+    def delete(x)
+	@head = @head.delete(x)
+	self
+    end
+
     def size
 	@head.size
     end
+
     def check
 	if @head.red?
 	    raise "Head node is red"
 	end
 	@head.check
     end
+
     def pt
 	@head.pt
     end
