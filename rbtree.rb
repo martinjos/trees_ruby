@@ -182,6 +182,41 @@ class Node
     end
 
     def delete_balance(head, side, child_depth_change)
+	depth_change = false
+	if child_depth_change
+	    # assert(head[side].black? && head[-side].depth >= 1)
+	    if head[-side].black?
+		if head[-side][side].black? &&
+		   head[-side][-side].black?
+		    head[-side].red!
+		    if head.black?
+			depth_change = true
+		    else
+			head.black!
+		    end
+		elsif head[-side][side].red? &&
+		      head[-side][-side].red?
+		    if head.black?
+			head[-side] = head[-side].rot(side)
+			head = head.rot(-side)
+			head.black!
+		    else
+			head = head.anti
+			head.left.black!
+			head.red!
+		    end
+		else
+		    if head[-side][side].red?
+			head[-side] = head[-side].rot(side)
+		    end
+		    # assert(head[-side][-side].red?)
+		    if head.black?
+		    else
+		    end
+		end
+	    end
+	end
+	[head, depth_change]
     end
 
     def size
