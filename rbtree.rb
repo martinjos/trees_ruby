@@ -233,6 +233,12 @@ class Node
 			head[-side].red!
 		    end
 		end
+	    else
+		head = head.rot(-side)
+		head.black!
+		head[side].red!
+		(head[side], junk) = delete_balance(head[side], side, true)
+		# assert(junk == false)
 	    end
 	end
 	[head, depth_change]
