@@ -133,12 +133,14 @@ class Node
     alias << add
 
     def delete(x)
+	#puts "Node(#{@value}).delete"
+	#pt
 	side = x <=> @value
 	head = self
 	depth_change = false
 	if side == 0
 	    if @left.is_a?(Node)
-		(@value, head, child_depth_change) = @left.delete_last
+		(@value, @left, child_depth_change) = @left.delete_last
 		(head, depth_change) =
 		    delete_balance(head, -1, child_depth_change)
 	    elsif @right.is_a?(Node)
@@ -160,6 +162,8 @@ class Node
     end
 
     def delete_last
+	#puts "Node(#{@value}).delete_last"
+	#pt
 	value = nil
 	head = self
 	depth_change = false
@@ -184,6 +188,8 @@ class Node
     def delete_balance(head, side, child_depth_change)
 	depth_change = false
 	if child_depth_change
+	    #puts "Node(#{@value}).delete_balance"
+	    #pt
 	    # assert(head[side].black? && head[-side].depth >= 1)
 	    if head[-side].black?
 		if head[-side][side].black? &&
@@ -251,8 +257,14 @@ class Node
     def pt(stack=[])
 	PrintTree.indent(stack)
 	puts (@red ? "red" : "black") + " #{@value}"
-	@left.pt(stack + [true])
-	@right.pt(stack + [false])
+	if !@left.nil? || !@right.nil?
+	    @left.pt(stack + [true])
+	    @right.pt(stack + [false])
+	end
+    end
+
+    def to_s
+	s = "#{@value}(#{@left},#{@right})"
     end
 end
 
@@ -287,6 +299,10 @@ class RBTree
 
     def pt
 	@head.pt
+    end
+
+    def to_s
+	"RBTree:#{@head.to_s}"
     end
 end
 
