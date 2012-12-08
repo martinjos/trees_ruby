@@ -201,17 +201,26 @@ class Node
 			head = head.rot(-side)
 			head.black!
 		    else
-			head = head.anti
-			head.left.black!
+			head = head.rot(-side)
+			head[side].black!
 			head.red!
 		    end
 		else
 		    if head[-side][side].red?
 			head[-side] = head[-side].rot(side)
+			# N.B.: the necessary recolouring happens below
 		    end
 		    # assert(head[-side][-side].red?)
 		    if head.black?
+			head = head.rot(-side)
+			head.black!
+			head[side].red!
+			head[-side].red!
+			depth_change = true
 		    else
+			head = head.rot(-side)
+			head.black!
+			head[-side].red!
 		    end
 		end
 	    end
