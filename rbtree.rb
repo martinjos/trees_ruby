@@ -209,6 +209,7 @@ class Node
 		    else
 			head = head.rot(-side)
 			head[side].black!
+			head[-side].black!
 			head.red!
 		    end
 		else
@@ -264,7 +265,14 @@ class Node
     end
 
     def to_s
-	s = "#{@value}(#{@left},#{@right})"
+	s = "#{@value}"
+	if red?
+	    s = "*" + s
+	end
+	if !@left.nil? || !@right.nil?
+	    s += "(#{@left},#{@right})"
+	end
+	s
     end
 end
 
