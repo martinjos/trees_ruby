@@ -29,6 +29,9 @@ class NilClass
 	PrintTree.indent(stack)
 	puts "" # always black - no need to print colour
     end
+    def clone
+	self
+    end
 end
 
 class Node
@@ -274,9 +277,18 @@ class Node
 	end
 	s
     end
+
+    def clone
+	c = self.dup
+	c.left = @left.clone
+	c.right = @right.clone
+	c
+    end
 end
 
 class RBTree
+    attr :head, true
+
     def initialize
 	@head = nil
     end
@@ -312,13 +324,35 @@ class RBTree
     def to_s
 	"RBTree:#{@head.to_s}"
     end
+
+    def clone
+	c = self.dup
+	c.head = @head.clone
+	c
+    end
+end
+
+class TreeTestError < RuntimeError
+    attr :t, :ot
+    def initialize(msg, t, ot)
+	super(msg)
+	@t = t
+	@ot = ot
+    end
 end
 
 def testadd(num, top, do_dump=true, t=RBTree.new)
-    (0...num).each {
-	t << rand(0...top)
-	t.check
-    }
+    ot = nil
+    begin
+	(0...num).each {
+	    t << rand(0...top)
+	    t.check
+	    ot = t
+	}
+    rescue RuntimeError => e
+	puts "\n#{e}\n"
+	raise TreeTestError.new(e.message, t, ot)
+    end
     if do_dump
 	t.pt
     end
@@ -326,10 +360,17 @@ def testadd(num, top, do_dump=true, t=RBTree.new)
 end
 
 def testdelete(num, top, do_dump=true, t)
-    (0...num).each {
-	t.delete rand(0...top)
-	t.check
-    }
+    ot = nil
+    begin
+	(0...num).each {
+	    t.delete rand(0...top)
+	    t.check
+	    ot = t.clone
+	}
+    rescue RuntimeError => e
+	puts "\n#{e}\n"
+	raise TreeTestError.new(e.message, t, ot)
+    end
     if do_dump
 	t.pt
     end
@@ -351,9 +392,8 @@ def testall(numtop, reps=100)
 	    testdelete(r, top, false, t)
 	    puts "t.size=#{t.size}, t.check=#{t.check}"
 	}
-    rescue RuntimeError => e
-	puts e
-	return t
+    rescue TreeTestError => e
+	return e
     end
     t
 end
