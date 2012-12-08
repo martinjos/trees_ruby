@@ -255,6 +255,7 @@ def testadd(order, num, top, do_dump=true)
     (0...num).each{
 	#puts "Adding a random integer..."
 	t.add rand(0...top)
+	t.check
     }
     if do_dump
 	t.dump
@@ -266,6 +267,7 @@ def testremove(t, num, top, do_dump=true)
     (0...num).each{
 	#puts "Removing a random integer..."
 	t.remove rand(0...top)
+	t.check
     }
     if do_dump
 	t.dump

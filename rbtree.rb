@@ -324,3 +324,36 @@ def testadd(num, top, do_dump=true, t=RBTree.new)
     end
     t
 end
+
+def testdelete(num, top, do_dump=true, t)
+    (0...num).each {
+	t.delete rand(0...top)
+	t.check
+    }
+    if do_dump
+	t.pt
+    end
+    t
+end
+
+def testall(numtop, reps=100)
+    top = 10000
+    t = RBTree.new
+    begin
+	(0...reps).each {
+	    r = rand(0...numtop)
+	    puts "Adding #{r}"
+	    testadd(r, top, false, t)
+	    puts "t.size=#{t.size}, t.check=#{t.check}"
+
+	    r = rand(0...numtop*4) # remove more, because some will miss
+	    puts "Deleting #{r}"
+	    testdelete(r, top, false, t)
+	    puts "t.size=#{t.size}, t.check=#{t.check}"
+	}
+    rescue RuntimeError => e
+	puts e
+	return t
+    end
+    t
+end
