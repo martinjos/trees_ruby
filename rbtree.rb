@@ -284,6 +284,49 @@ class Node
 	c.right = @right.clone
 	c
     end
+
+    def diff(other, stack=[], saved_stack=[nil])
+	if @value != other.value ||
+	   @red != other.red? ||
+	   @left.nil? != other.left.nil? ||
+	   @right.nil? != other.right.nil?
+	    # there is some difference
+	    #puts "Difference detected"
+	    if saved_stack[0].nil?
+		saved_stack[0] = stack.clone
+	    else
+		saved_stack[0] = saved_stack[0].lcd(stack)
+	    end
+	else
+	    #puts "No difference here..."
+	    if !@left.nil?
+		@left.diff(other.left, stack + [-1], saved_stack)
+	    end
+	    if !@right.nil?
+		@right.diff(other.right, stack + [1], saved_stack)
+	    end
+	end
+	saved_stack
+    end
+
+    def walk_stack(stack)
+	if stack.empty?
+	    self
+	else
+	    self[stack.first].walk_stack(stack[1..-1])
+	end
+    end
+end
+
+class Array
+    def lcd(other)
+	each_with_index {|item, idx|
+	    if idx >= other.size || other[idx] != item
+		return slice(0, idx)
+	    end
+	}
+	self
+    end
 end
 
 class RBTree
@@ -330,6 +373,30 @@ class RBTree
 	c.head = @head.clone
 	c
     end
+
+    def diff(other)
+	if @head.nil? != other.head.nil?
+	    diff_result(@head, other.head)
+	elsif !@head.nil?
+	    stack = @head.diff(other.head)
+	    stack = stack[0]
+	    if stack.nil?
+		puts "No difference."
+	    else
+		diff_result(@head.walk_stack(stack),
+			    other.head.walk_stack(stack))
+	    end
+	else
+	    puts "No difference."
+	end
+    end
+end
+
+def diff_result(x, y)
+    puts "First:"
+    x.pt
+    puts "Second:"
+    y.pt
 end
 
 class TreeTestError < RuntimeError
